@@ -1,7 +1,16 @@
 
+
+# Foobar
+
 This library can help you use graqlph to communicate with magento.
 
-Useage:
+## Installation
+
+npm i magento-graphql-lib
+
+## Usage
+
+```javascript
 
 const { BatchGraphql, InitGraphqlConnect, GraphQl } = require("magento-graphql-lib")
 
