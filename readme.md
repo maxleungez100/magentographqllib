@@ -8,8 +8,12 @@ const { BatchGraphql, InitGraphqlConnect, GraphQl } = require("magento-graphql-l
 InitGraphqlConnect("http://magentoserver")
 
 async function fun() {
-    const rs = await BatchGraphql(["co", "s"]).Querys(SIGN_IN, { email: "test@test.com", password: "123123123" })
-    console.log(rs)
+    //default store code
+    const rs1 = await BatchGraphql().Querys(SIGN_IN, { email: "test@test.com", password: "123123123" })
+    console.log(rs1)
+    //muit store code
+    const rs2 = await BatchGraphql(["store1","store2"]).Querys(SIGN_IN, { email: "test@test.com", password: "123123123" })
+    console.log(rs2)
 }
 
 fun()
