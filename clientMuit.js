@@ -99,7 +99,6 @@ const BatchGraphql = (codes = [""], token = "") => {
 
     codes.map((store_code) => {
         if (!clientPool[store_code] || !clientTokenPool[store_code]) {
-            console.log("create store to pool")
             clientTokenPool[store_code] = token
             clientPool[store_code] = new ApolloClient({
                 cache: new InMemoryCache({ addTypename: false }),
