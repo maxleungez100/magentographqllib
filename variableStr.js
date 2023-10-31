@@ -18,13 +18,6 @@ categories {
   position
   name
 }
-product_stock{
-  is_decimal_divided
-  is_qty_decimal
-  max_sale_qty
-  min_sale_qty
-  qty_increments
-}
 special_to_date
 price_range{
     maximum_price{

@@ -2,13 +2,9 @@ const { ApolloClient, InMemoryCache, HttpLink, from, DefaultOptions } = require(
 const { setContext } = require("apollo-link-context");
 const fetch = require('cross-fetch');
 
-var clientPool = {};
+var clientPool = {}
 var ServerEndPoint = ""
-
-// export interface GQlResultProps {
-//     msg: string,
-//     errPath: string,
-// }
+var clientTokenPool = {}
 
 
 
@@ -25,8 +21,8 @@ const defaultOptions = {
 
 
 
-const genAuthMiddlewares = (token, store, method) => {
-    const Store = store
+const genAuthMiddlewares = (storeCode, token = "", method = "post") => {
+    const Store = storeCode
     return setContext((req, { headers }) => {
         if (Store) {
             headers = {
@@ -51,12 +47,12 @@ async function runGraphQL(code, ql, varb, idx = 0, act = "") {
         var rsdata = ""
         try {
             var variables = varb?.[idx] || varb
-            if (act=="1") {
+            if (act == "1") {
                 rsdata = await clientPool[code].mutate({ mutation: ql, variables, errorPolicy: "all" })
-            }else{
+            } else {
                 rsdata = await clientPool[code].query({ query: ql, variables, errorPolicy: "all" })
             }
-            
+
             resolve(rsdata)
             return
         } catch (error) {
@@ -82,7 +78,7 @@ async function QuerysAct(query, varb) {
 async function MutationsAct(mutation, varb) {
     var results = []
     var process = Object.values(this.codes).map((clientKey, idx) => {
-        return  runGraphQL(clientKey, mutation, varb, idx,"1")
+        return runGraphQL(clientKey, mutation, varb, idx, "1")
     })
     results = await Promise.all(process)
     return results
@@ -90,6 +86,7 @@ async function MutationsAct(mutation, varb) {
 
 const ResetClients = () => {
     clientPool = {}
+    clientTokenPool = {}
 }
 
 
@@ -99,11 +96,14 @@ const InitGraphqlConnect = (serverEndPoint) => {
 
 const BatchGraphql = (codes = [""], token = "") => {
     const httpLink = new HttpLink({ uri: `${ServerEndPoint}/graphql`, fetch });
-    codes.map((code) => {
-        if (!clientPool[code]) {
-            clientPool[code] = new ApolloClient({
+
+    codes.map((store_code) => {
+        if (!clientPool[store_code] || !clientTokenPool[store_code]) {
+            console.log("create store to pool")
+            clientTokenPool[store_code] = token
+            clientPool[store_code] = new ApolloClient({
                 cache: new InMemoryCache({ addTypename: false }),
-                link: from([genAuthMiddlewares(token, code, "Post"), httpLink]),
+                link: from([genAuthMiddlewares(store_code, clientTokenPool[store_code], "Post"), httpLink]),
                 defaultOptions
             })
         }
