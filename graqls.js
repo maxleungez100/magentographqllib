@@ -407,7 +407,7 @@ module.exports = {
   REMOVE_ITEM_FROM_CART: gql`mutation removeItemFromCart ($input: RemoveItemFromCartInput) {
     removeItemFromCart (input: $input) {
         cart{
-            id
+            ${cart}
         }
     }
 }`,
