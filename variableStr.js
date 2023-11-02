@@ -446,8 +446,6 @@ default_display_currency_code
 default_keywords
 default_title
 demonotice
-flatrate_fee
-freeshipping_subtotal
 front
 grid_per_page
 grid_per_page_values
@@ -485,31 +483,14 @@ send_friend {
 }
 show_cms_breadcrumbs
 store_code
-store_extra_information {
-  business_type
-  latitude
-  longitude
-  overall
-  radius
-  store_type
-  state_coverage
-  store_info
-}
+
 store_group_code
 store_group_name
 store_information {
-  city
-  country
-  country_id
-  hours
-  name
-  phone
-  postcode
-  region
-  region_id
-  street_line1
-  street_line2
-  vat_number
+  storeName
+  address{
+    city
+  }
 }
 store_name
 store_sort_order

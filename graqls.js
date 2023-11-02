@@ -310,7 +310,18 @@ module.exports = {
 
   GET_STORE_CONFIG: gql`query getStoreConfig{
   storeConfig{
-   ${storeConfig}
+    store_information {
+      storeName
+      address{
+        city
+        country
+        phone
+        postCode
+        regions_code
+        state
+        street
+      }
+    }
   }
 }`,
 
