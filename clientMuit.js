@@ -43,6 +43,7 @@ const genAuthMiddlewares = (storeCode, token = "", method = "post") => {
 }
 
 async function runGraphQL(code, ql, varb, idx = 0, act = "") {
+
     const rs = await new Promise(async (resolve, err) => {
         var rsdata = ""
         try {
@@ -56,7 +57,9 @@ async function runGraphQL(code, ql, varb, idx = 0, act = "") {
             resolve(rsdata)
             return
         } catch (error) {
-            resolve({ error })
+            // console.log(error.message)
+
+            resolve({error, errorMsg: error.networkError.bodyText})
         }
 
     })
@@ -95,6 +98,11 @@ const InitGraphqlConnect = (serverEndPoint) => {
 }
 
 const BatchGraphql = (codes = [""], token = "") => {
+    if (!ServerEndPoint){
+        throw new Error("Run InitGraphqlConnect First!!!")
+    }
+
+
     const httpLink = new HttpLink({ uri: `${ServerEndPoint}/graphql`, fetch });
 
     codes.map((store_code) => {
@@ -107,6 +115,7 @@ const BatchGraphql = (codes = [""], token = "") => {
             })
         }
     })
+
 
     const module = {
         codes,
