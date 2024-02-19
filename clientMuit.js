@@ -22,28 +22,25 @@ const defaultOptions = {
 
 
 const genAuthMiddlewares = (storeCode, token = "", method = "post") => {
-    const Store = storeCode
-    return setContext((req, { headers }) => {
-        if (Store) {
-            headers = {
-                ...headers,
-                authorization: token ? `Bearer ${token}` : '',
-                Store
-            }
-        } else {
-            headers = {
-                ...headers,
-                authorization: token ? `Bearer ${token}` : '',
-            }
+    // const Store = storeCode 
+
+    const genHeader = (req, { headers }) => {
+        headers = {
+            ...headers,
+            authorization: token ? `Bearer ${token}` : '',
         }
-        return {
-            headers
-        };
-    });
+        if (storeCode) {
+            headers["Store"] = storeCode
+        }
+        return { headers };
+    }
+
+
+
+    return setContext(genHeader);
 }
 
 async function runGraphQL(code, ql, varb, idx = 0, act = "") {
-
     const rs = await new Promise(async (resolve, err) => {
         var rsdata = ""
         try {
@@ -59,7 +56,7 @@ async function runGraphQL(code, ql, varb, idx = 0, act = "") {
         } catch (error) {
             // console.log(error.message)
 
-            resolve({error, errorMsg: error.networkError.bodyText})
+            resolve({ error, errorMsg: error.networkError.bodyText })
         }
 
     })
@@ -98,7 +95,7 @@ const InitGraphqlConnect = (serverEndPoint) => {
 }
 
 const BatchGraphql = (codes = [""], token = "") => {
-    if (!ServerEndPoint){
+    if (!ServerEndPoint) {
         throw new Error("Run InitGraphqlConnect First!!!")
     }
 
