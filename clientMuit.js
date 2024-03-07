@@ -92,6 +92,7 @@ const ResetClients = () => {
 
 const InitGraphqlConnect = (serverEndPoint) => {
     ServerEndPoint = serverEndPoint
+    ResetClients()
 }
 
 const BatchGraphql = (codes = [""], token = "") => {
@@ -99,12 +100,11 @@ const BatchGraphql = (codes = [""], token = "") => {
         throw new Error("Run InitGraphqlConnect First!!!")
     }
 
-
     const httpLink = new HttpLink({ uri: `${ServerEndPoint}/graphql`, fetch });
 
     codes.map((store_code) => {
+        clientTokenPool[store_code] = token
         if (!clientPool[store_code] || !clientTokenPool[store_code]) {
-            clientTokenPool[store_code] = token
             clientPool[store_code] = new ApolloClient({
                 cache: new InMemoryCache({ addTypename: false }),
                 link: from([genAuthMiddlewares(store_code, clientTokenPool[store_code], "Post"), httpLink]),
