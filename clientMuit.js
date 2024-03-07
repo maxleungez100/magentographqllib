@@ -2,11 +2,8 @@ const { ApolloClient, InMemoryCache, HttpLink, from, DefaultOptions } = require(
 const { setContext } = require("apollo-link-context");
 const fetch = require('cross-fetch');
 
-var clientPool = {}
+
 var ServerEndPoint = ""
-var clientTokenPool = {}
-
-
 
 const defaultOptions = {
     watchQuery: {
@@ -22,9 +19,9 @@ const defaultOptions = {
 
 
 const genAuthMiddlewares = (storeCode, token = "", method = "post") => {
-    // const Store = storeCode 
 
     const genHeader = (req, { headers }) => {
+
         headers = {
             ...headers,
             authorization: token ? `Bearer ${token}` : '',
@@ -34,28 +31,22 @@ const genAuthMiddlewares = (storeCode, token = "", method = "post") => {
         }
         return { headers };
     }
-
-
-
     return setContext(genHeader);
 }
 
-async function runGraphQL(code, ql, varb, idx = 0, act = "") {
+async function runGraphQL(client, ql, varb, idx = 0, act = "") {
     const rs = await new Promise(async (resolve, err) => {
         var rsdata = ""
         try {
             var variables = varb?.[idx] || varb
             if (act == "1") {
-                rsdata = await clientPool[code].mutate({ mutation: ql, variables, errorPolicy: "all" })
+                rsdata = await client.mutate({ mutation: ql, variables, errorPolicy: "all" })
             } else {
-                rsdata = await clientPool[code].query({ query: ql, variables, errorPolicy: "all" })
+                rsdata = await client.query({ query: ql, variables, errorPolicy: "all" })
             }
-
             resolve(rsdata)
             return
         } catch (error) {
-            // console.log(error.message)
-
             resolve({ error, errorMsg: error.networkError.bodyText })
         }
 
@@ -68,8 +59,8 @@ async function runGraphQL(code, ql, varb, idx = 0, act = "") {
 
 async function QuerysAct(query, varb) {
     var results = []
-    var process = Object.values(this.codes).map((clientKey, idx) => {
-        return runGraphQL(clientKey, query, varb, idx)
+    var process = Object.values(this.stores).map((client, idx) => {
+        return runGraphQL(client, query, varb, idx)
     })
     results = await Promise.all(process)
     return results
@@ -77,16 +68,16 @@ async function QuerysAct(query, varb) {
 
 async function MutationsAct(mutation, varb) {
     var results = []
-    var process = Object.values(this.codes).map((clientKey, idx) => {
-        return runGraphQL(clientKey, mutation, varb, idx, "1")
+    var process = Object.values(this.stores).map((client, idx) => {
+        return runGraphQL(client, mutation, varb, idx, "1")
     })
     results = await Promise.all(process)
     return results
 }
 
 const ResetClients = () => {
-    clientPool = {}
-    clientTokenPool = {}
+    // clientPool = {}
+    // clientTokenPool = {}
 }
 
 
@@ -102,20 +93,18 @@ const BatchGraphql = (codes = [""], token = "") => {
 
     const httpLink = new HttpLink({ uri: `${ServerEndPoint}/graphql`, fetch });
 
-    codes.map((store_code) => {
-        clientTokenPool[store_code] = token
-        if (!clientPool[store_code] || !clientTokenPool[store_code]) {
-            clientPool[store_code] = new ApolloClient({
-                cache: new InMemoryCache({ addTypename: false }),
-                link: from([genAuthMiddlewares(store_code, clientTokenPool[store_code], "Post"), httpLink]),
-                defaultOptions
-            })
-        }
+    const stores = codes.map((store_code) => {
+        return new ApolloClient({
+            cache: new InMemoryCache({ addTypename: false }),
+            link: from([genAuthMiddlewares(store_code, token, "Post"), httpLink]),
+            defaultOptions
+        })
+
     })
 
 
     const module = {
-        codes,
+        stores,
         Querys: QuerysAct,
         Mutations: MutationsAct
     }
