@@ -2,8 +2,7 @@ const { ApolloClient, InMemoryCache, HttpLink, from, DefaultOptions } = require(
 const { setContext } = require("apollo-link-context");
 const fetch = require('cross-fetch');
 
-
-var ServerEndPoint = ""
+//
 
 const defaultOptions = {
     watchQuery: {
@@ -82,13 +81,15 @@ const ResetClients = () => {
 
 
 const InitGraphqlConnect = (serverEndPoint) => {
-    ServerEndPoint = serverEndPoint
+    // SetServerLink(serverEndPoint)
     ResetClients()
 }
 
 const BatchGraphql = (codes = [""], token = "") => {
+    const ServerEndPoint = process.env.SERVER
     if (!ServerEndPoint) {
-        throw new Error("Run InitGraphqlConnect First!!!")
+
+        throw new Error("Run InitGraphqlConnect First!!! .env or .env.local file type SERVER='URL'")
     }
 
     const httpLink = new HttpLink({ uri: `${ServerEndPoint}/graphql`, fetch });
